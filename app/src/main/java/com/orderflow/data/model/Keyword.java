@@ -152,7 +152,9 @@ public class Keyword {
     public int getPriority() { return priority; }
     public void setPriority(int priority) { this.priority = priority; }
 
+    @com.google.firebase.firestore.PropertyName("enabled")
     public boolean isEnabled() { return isEnabled; }
+    @com.google.firebase.firestore.PropertyName("enabled")
     public void setEnabled(boolean enabled) { isEnabled = enabled; }
 
     public String getMatchType() { return matchType; }
@@ -173,6 +175,7 @@ public class Keyword {
      * Used in the RecyclerView list item to show all triggers in one line.
      * Example: "price, cost, amount, how much"
      */
+    @com.google.firebase.firestore.Exclude
     public String getKeywordsDisplayText() {
         if (keywords == null || keywords.isEmpty()) return "";
         return String.join(", ", keywords);
@@ -181,6 +184,7 @@ public class Keyword {
     /**
      * Checks if this is a partial match type.
      */
+    @com.google.firebase.firestore.Exclude
     public boolean isPartialMatch() {
         return MATCH_TYPE_PARTIAL.equals(matchType);
     }

@@ -129,6 +129,7 @@ public class WhatsAppNotificationListener extends NotificationListenerService {
 
                 // Loop through keywords (already ordered by priority)
                 for (Keyword rule : keywords) {
+                    Log.d(TAG, "Checking rule: " + rule.getId() + " [Keywords: " + rule.getKeywordsDisplayText() + "]");
                     String matchedTrigger = KeywordMatcher.findMatch(rule, messageBody);
                     if (matchedTrigger != null) {
                         Log.i(TAG, "MATCH FOUND! Rule ID: " + rule.getId() + " | Trigger: " + matchedTrigger);

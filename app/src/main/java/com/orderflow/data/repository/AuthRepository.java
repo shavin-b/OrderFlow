@@ -113,11 +113,13 @@ public class AuthRepository {
         firebaseAuth.signInWithEmailAndPassword(trimmedEmail, password)
                 .addOnSuccessListener(authResult -> callback.onSuccess())
                 .addOnFailureListener(exception -> {
+                    android.util.Log.e("AuthRepository", "SignIn failed: " + exception.getClass().getSimpleName() + " - " + exception.getMessage());
                     if (exception instanceof FirebaseAuthInvalidUserException) {
                         // If account does not exist yet, automatically create it!
                         firebaseAuth.createUserWithEmailAndPassword(trimmedEmail, password)
                                 .addOnSuccessListener(authResult -> callback.onSuccess())
                                 .addOnFailureListener(createException -> {
+                                    android.util.Log.e("AuthRepository", "CreateUser failed: " + createException.getClass().getSimpleName() + " - " + createException.getMessage());
                                     callback.onFailure(getAuthErrorMessage(createException));
                                 });
                     } else {
@@ -254,6 +256,8 @@ public class AuthRepository {
                 case "ERROR_INVALID_CREDENTIAL":
                     // Firebase Auth v22+ consolidates wrong email+password into this code
                     return "Incorrect email or password. Please try again.";
+                case "ERROR_WEAK_PASSWORD":
+                    return "The password is too weak. It must be at least 6 characters.";
                 default:
                     return "Invalid credentials. Please check your email and password.";
             }

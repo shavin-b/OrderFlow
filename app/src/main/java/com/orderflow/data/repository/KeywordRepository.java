@@ -85,15 +85,30 @@ public class KeywordRepository {
             return;
         }
 
+        String uid = auth.getCurrentUser().getUid();
+        android.util.Log.d("KeywordRepository", "Fetching active keywords for UID: " + uid);
+
         getKeywordCollection()
-                .whereEqualTo("isEnabled", true)
-                .orderBy("priority", Query.Direction.ASCENDING)
+                // Temporarily removing filter to diagnose empty result issue
+                .orderBy("priority", com.google.firebase.firestore.Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Keyword> keywords = queryDocumentSnapshots.toObjects(Keyword.class);
-                    callback.onDataLoaded(keywords);
+                    List<Keyword> allKeywords = queryDocumentSnapshots.toObjects(Keyword.class);
+                    android.util.Log.d("KeywordRepository", "Total keywords found in DB: " + allKeywords.size());
+                    
+                    List<Keyword> activeKeywords = new java.util.ArrayList<>();
+                    for (Keyword k : allKeywords) {
+                        android.util.Log.d("KeywordRepository", "Rule: " + k.getId() + " | Enabled: " + k.isEnabled());
+                        if (k.isEnabled()) {
+                            activeKeywords.add(k);
+                        }
+                    }
+                    callback.onDataLoaded(activeKeywords);
                 })
-                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("KeywordRepository", "Error fetching active keywords: " + e.getMessage());
+                    callback.onError(e.getMessage());
+                });
     }
 
     /**

@@ -190,6 +190,7 @@ public class MessageLog {
     /**
      * Returns true if this log entry represents a successfully sent reply.
      */
+    @com.google.firebase.firestore.Exclude
     public boolean isReplied() {
         return STATUS_REPLIED.equals(status);
     }
@@ -197,6 +198,7 @@ public class MessageLog {
     /**
      * Returns true if the message was skipped due to cooldown.
      */
+    @com.google.firebase.firestore.Exclude
     public boolean isCooldown() {
         return STATUS_COOLDOWN.equals(status);
     }
@@ -204,6 +206,7 @@ public class MessageLog {
     /**
      * Returns true if no keyword matched this message.
      */
+    @com.google.firebase.firestore.Exclude
     public boolean isNoMatch() {
         return STATUS_NO_MATCH.equals(status);
     }
@@ -212,6 +215,7 @@ public class MessageLog {
      * Returns a display-friendly version of the customer name.
      * Falls back to phone number if name is unavailable.
      */
+    @com.google.firebase.firestore.Exclude
     public String getDisplayName() {
         if (customerName != null && !customerName.isEmpty()) return customerName;
         if (phoneNumber != null && !phoneNumber.isEmpty()) return phoneNumber;
@@ -221,6 +225,7 @@ public class MessageLog {
     /**
      * Returns a truncated version of the incoming message for list item display.
      */
+    @com.google.firebase.firestore.Exclude
     public String getIncomingMessagePreview() {
         if (incomingMessage == null || incomingMessage.isEmpty()) return "";
         if (incomingMessage.length() <= 60) return incomingMessage;

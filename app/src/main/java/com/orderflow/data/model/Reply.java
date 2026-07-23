@@ -107,7 +107,9 @@ public class Reply {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
+    @com.google.firebase.firestore.PropertyName("enabled")
     public boolean isEnabled() { return isEnabled; }
+    @com.google.firebase.firestore.PropertyName("enabled")
     public void setEnabled(boolean enabled) { isEnabled = enabled; }
 
     public Timestamp getCreatedAt() { return createdAt; }
@@ -127,6 +129,7 @@ public class Reply {
      * @param maxLength Maximum characters before truncating with "…"
      * @return Truncated preview string
      */
+    @com.google.firebase.firestore.Exclude
     public String getContentPreview(int maxLength) {
         if (content == null || content.isEmpty()) return "";
         if (content.length() <= maxLength) return content;
@@ -136,6 +139,7 @@ public class Reply {
     /**
      * Convenience method — returns a standard 80-char preview.
      */
+    @com.google.firebase.firestore.Exclude
     public String getContentPreview() {
         return getContentPreview(80);
     }
@@ -143,6 +147,7 @@ public class Reply {
     /**
      * Returns the character count of the content for the UI counter.
      */
+    @com.google.firebase.firestore.Exclude
     public int getCharacterCount() {
         return content != null ? content.length() : 0;
     }

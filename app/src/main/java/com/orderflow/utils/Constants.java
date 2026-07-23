@@ -62,7 +62,7 @@ public final class Constants {
         public static final String FIELD_TIMESTAMP    = "timestamp";
         public static final String FIELD_CREATED_AT   = "createdAt";
         public static final String FIELD_UPDATED_AT   = "updatedAt";
-        public static final String FIELD_IS_ENABLED   = "isEnabled";
+        public static final String FIELD_IS_ENABLED   = "enabled";
         public static final String FIELD_PRIORITY     = "priority";
         public static final String FIELD_REPLY_ID     = "replyId";
         public static final String FIELD_STATUS       = "status";

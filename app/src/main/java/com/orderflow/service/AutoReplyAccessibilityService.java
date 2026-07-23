@@ -31,8 +31,9 @@ public class AutoReplyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // We only care when the window state changes (e.g., chat screen opens)
-        if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            Log.d(TAG, "Window changed to: " + event.getPackageName() + " | Class: " + event.getClassName());
+        } else {
             return;
         }
 
@@ -50,9 +51,17 @@ public class AutoReplyAccessibilityService extends AccessibilityService {
         Log.d(TAG, "Executing pending reply task...");
 
         // 1. Find the Text Input field (EditText)
-        AccessibilityNodeInfo inputNode = findNodeByClassName(rootNode, "android.widget.EditText");
+        // Try Resource ID first (reliable across versions), fallback to class name (robust)
+        AccessibilityNodeInfo inputNode = findNodeByResourceId(rootNode, com.orderflow.utils.Constants.WhatsApp.REPLY_INPUT_RESOURCE_ID);
+        if (inputNode != null) {
+            Log.d(TAG, "Found input field by Resource ID.");
+        } else {
+            inputNode = findNodeByClassName(rootNode, "android.widget.EditText");
+            if (inputNode != null) Log.d(TAG, "Found input field by Class Name.");
+        }
+
         if (inputNode == null) {
-            Log.e(TAG, "Could not find text input field.");
+            Log.e(TAG, "Could not find text input field in window: " + event.getPackageName());
             return;
         }
 
@@ -76,10 +85,17 @@ public class AutoReplyAccessibilityService extends AccessibilityService {
         if (rootNode == null) return;
 
         // 3. Find and Click the Send Button
-        // WhatsApp usually sets the contentDescription of the send button to "Send"
-        AccessibilityNodeInfo sendNode = findNodeByContentDescription(rootNode, "Send");
+        // Try Resource ID first (best for language support), then fallback to content description "Send"
+        AccessibilityNodeInfo sendNode = findNodeByResourceId(rootNode, com.orderflow.utils.Constants.WhatsApp.SEND_BUTTON_RESOURCE_ID);
+        if (sendNode != null) {
+            Log.d(TAG, "Found Send button by Resource ID.");
+        } else {
+            sendNode = findNodeByContentDescription(rootNode, "Send");
+            if (sendNode != null) Log.d(TAG, "Found Send button by Content Description.");
+        }
+
         if (sendNode == null) {
-            Log.e(TAG, "Could not find the Send button.");
+            Log.e(TAG, "Could not find the Send button. Root has children: " + rootNode.getChildCount());
             // Optional: fallback to searching by view ID if needed in the future
             return;
         }
@@ -149,6 +165,18 @@ public class AutoReplyAccessibilityService extends AccessibilityService {
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo result = findNodeByContentDescription(node.getChild(i), desc);
             if (result != null) return result;
+        }
+        return null;
+    }
+
+    /**
+     * Finds a node using its fully qualified resource ID name.
+     */
+    private AccessibilityNodeInfo findNodeByResourceId(AccessibilityNodeInfo node, String resourceId) {
+        if (node == null || resourceId == null) return null;
+        List<AccessibilityNodeInfo> nodes = node.findAccessibilityNodeInfosByViewId(resourceId);
+        if (nodes != null && !nodes.isEmpty()) {
+            return nodes.get(0);
         }
         return null;
     }
