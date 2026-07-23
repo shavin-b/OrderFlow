@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         PERMISSIONS
+         Each permission is declared here with its purpose explained.
+         ============================================================ -->
+
+    <!-- Required for all Firebase operations (Auth, Firestore, Storage) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Allows the app to restart WhatsApp listener services after device reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Required on Android 13+ (API 33+) to show any notification to the user -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Required to run the auto-reply service in the background reliably -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Required on Android 14+ for foreground services with special use case -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- NOTE: The following two permissions are NOT declared here because
+         they are SPECIAL permissions granted by the user in System Settings,
+         not granted by the OS at install time:
+         - BIND_NOTIFICATION_LISTENER_SERVICE (granted in Settings > Notification Access)
+         - BIND_ACCESSIBILITY_SERVICE (granted in Settings > Accessibility)
+         The Permission Wizard (Phase 2) will guide the user to enable these. -->
+
+    <application
+        android:name=".OrderFlowApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.OrderFlow"
+        tools:targetApi="31">
+
+        <!-- ============================================================
+             MAIN ACTIVITY
+             Placeholder for Phase 1 — will be replaced by SplashActivity
+             routing logic in Phase 2 (Login feature).
+             ============================================================ -->
+        <!-- ============================================================
+             PHASE 2 ACTIVITIES (Auth & Onboarding)
+             ============================================================ -->
+        <activity
+            android:name=".ui.common.SplashActivity"
+            android:theme="@style/Theme.OrderFlow.Splash"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.wizard.PermissionWizardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait" />
+
+        <!-- ============================================================
+             NOTIFICATION LISTENER SERVICE
+             Purpose: Reads incoming WhatsApp Business notifications silently.
+             How it works: Android delivers all posted notifications to this
+             service. We filter for package = com.whatsapp.w4b only.
+             Activation: User must grant access in Settings > Apps >
+             Special App Access > Notification Access.
+             The Permission Wizard (Phase 2) will deep-link the user there.
+             ============================================================ -->
+        <service
+            android:name=".service.WhatsAppNotificationListener"
+            android:exported="false"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- ============================================================
+             ACCESSIBILITY SERVICE
+             Purpose: Opens WhatsApp Business chat, types the reply, and
+             presses the Send button — all automatically.
+             How it works: Monitors accessibility events from com.whatsapp.w4b,
+             then performs actions (click, type, swipe) on UI elements.
+             Activation: User must enable in Settings > Accessibility > OrderFlow.
+             The Permission Wizard (Phase 2) will guide the user there.
+             ============================================================ -->
+        <service
+            android:name=".service.AutoReplyAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
+        </service>
+
+        <!-- ============================================================
+             BOOT RECEIVER
+             Purpose: Restarts the Notification Listener and Accessibility
+             Service after the device is rebooted, so auto-reply works
+             without the user having to manually open the app.
+             ============================================================ -->
+        <receiver
+            android:name=".service.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

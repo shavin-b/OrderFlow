@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    BOTTOM NAVIGATION ICON COLOR SELECTOR
+    Selected state uses WhatsApp green; unselected state uses the muted surface variant color.
+    This is referenced by the bottomNavigationStyle in themes.xml.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/wa_green" android:state_checked="true" />
+    <item android:color="?attr/colorOnSurfaceVariant" android:state_checked="false" />
+</selector>

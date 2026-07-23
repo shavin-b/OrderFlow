@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Primary Colors (WhatsApp Teal in Dark Mode) -->
+    <color name="brand_teal">#00A884</color>
+    <color name="brand_teal_dark">#008069</color>
+    <color name="brand_teal_light">#202C33</color>
+
+    <!-- Dark Theme Backgrounds -->
+    <color name="background_light">#111B21</color>
+    <color name="surface">#202C33</color>
+
+    <!-- Dark Theme Text Colors -->
+    <color name="text_primary">#E9EDEF</color>
+    <color name="text_secondary">#8696A0</color>
+    <color name="text_tertiary">#667781</color>
+
+    <!-- Status Badges -->
+    <color name="status_success">#00A884</color>
+    <color name="status_warning">#FFB800</color>
+    <color name="status_error">#F87171</color>
+</resources>

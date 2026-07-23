@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    BACKUP RULES (Android 11 and below / API 30-)
+    Legacy backup configuration for devices running Android 11 or below.
+    Same logic as data_extraction_rules.xml — exclude sensitive local data.
+-->
+<full-backup-content>
+    <!-- Exclude SharedPreferences from Android backup service -->
+    <exclude domain="sharedpref" path="." />
+    <!-- Exclude any local database files -->
+    <exclude domain="database" path="." />
+    <!-- Exclude internal files -->
+    <exclude domain="file" path="." />
+    <!-- Exclude cache -->
+    <exclude domain="cache" path="." />
+</full-backup-content>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ADAPTIVE ICON — Standard (all shapes)
+    Android 8.0+ uses adaptive icons that can be masked to any shape
+    (circle, squircle, square, etc.) by the launcher.
+    This file defines the two layers: background + foreground.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

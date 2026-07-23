@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    BOTTOM NAVIGATION MENU
+    CRITICAL: The item IDs MUST exactly match the fragment IDs in nav_graph.xml.
+    NavigationUI.setupWithNavController() uses these IDs to sync the bottom nav
+    selection with the Navigation Component's current destination.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/dashboardFragment"
+        android:icon="@drawable/ic_nav_dashboard"
+        android:title="@string/nav_dashboard" />
+
+    <item
+        android:id="@+id/keywordsFragment"
+        android:icon="@drawable/ic_nav_keywords"
+        android:title="@string/nav_keywords" />
+
+    <item
+        android:id="@+id/repliesFragment"
+        android:icon="@drawable/ic_nav_replies"
+        android:title="@string/nav_replies" />
+
+    <item
+        android:id="@+id/logsFragment"
+        android:icon="@drawable/ic_nav_logs"
+        android:title="@string/nav_logs" />
+
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/ic_nav_settings"
+        android:title="@string/nav_settings" />
+
+</menu>

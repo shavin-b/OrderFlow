@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ADD / EDIT KEYWORD DIALOG
+    Displayed as a BottomSheet or AlertDialog to create/modify rules.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="?attr/colorSurface">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Keyword Rule"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Trigger Words Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_keywords"
+        style="@style/Widget.OrderFlow.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Trigger words (comma separated)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_keywords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Example: price, cost, rate"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Match Type Dropdown -->
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Match Type"
+        android:layout_marginBottom="16dp"
+        app:boxCornerRadiusTopStart="@dimen/radius_small"
+        app:boxCornerRadiusTopEnd="@dimen/radius_small"
+        app:boxCornerRadiusBottomStart="@dimen/radius_small"
+        app:boxCornerRadiusBottomEnd="@dimen/radius_small">
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_match_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:text="PARTIAL" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Priority Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_priority"
+        style="@style/Widget.OrderFlow.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Priority (1 = highest)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="10" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rules with a lower number are checked first."
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Linked Reply Dropdown (Currently a plain text input until Reply Manager is built) -->
+    <!-- TODO (Phase 5): Change this to a Dropdown that fetches from Replies collection -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_reply_id"
+        style="@style/Widget.OrderFlow.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Reply Template ID">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_reply_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            style="@style/Widget.OrderFlow.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            style="@style/Widget.OrderFlow.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save Rule" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,11 @@
+// Top-level build file.
+// This file declares plugins used by sub-projects/modules — note 'apply false'
+// so the plugin is downloaded but NOT applied here; only applied in app/build.gradle.
+
+plugins {
+    // Android Gradle Plugin — builds Android apps and libraries
+    id 'com.android.application' version '8.13.2' apply false
+
+    // Google Services plugin — processes google-services.json for Firebase
+    id 'com.google.gms.google-services' version '4.4.2' apply false
+}

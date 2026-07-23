@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ORDERFLOW APP ICON — FOREGROUND LAYER
+    This is the foreground of the adaptive icon (shown on top of the green background).
+    Draws a WhatsApp-style speech bubble in white with a checkmark inside.
+
+    Viewport: 108x108dp
+    Safe zone: 72x72dp centered (18dp from each edge)
+    Content sits within the safe zone so it isn't cropped by any launcher mask shape.
+
+    Path breakdown:
+    1. Speech bubble outline (rounded rectangle with a triangular tail at bottom-left)
+    2. Checkmark inside the bubble
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Speech bubble body + tail (white) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M78,22 H30 C25.6,22 22,25.6 22,30
+            V62 C22,66.4 25.6,70 30,70
+            H44 L54,86 L64,70
+            H78 C82.4,70 86,66.4 86,62
+            V30 C86,25.6 82.4,22 78,22 Z" />
+
+    <!-- Checkmark inside the bubble (uses primary green to "cut" / be visible) -->
+    <path
+        android:fillColor="#075E54"
+        android:pathData="
+            M47,55 L37.5,45.5 L40.7,42.3 L47,48.6
+            L67.3,28.3 L70.5,31.5 Z" />
+</vector>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ACCESSIBILITY SERVICE CONFIGURATION
+    This file tells Android what kind of accessibility events the service
+    needs to receive and what capabilities it requires.
+
+    Key settings explained:
+    - accessibilityEventTypes: which UI events to receive
+      - typeWindowContentChanged: triggered when screen content changes (e.g., reply input appears)
+      - typeWindowStateChanged: triggered when a new window/dialog opens (e.g., WhatsApp chat opens)
+      - typeViewClicked: triggered when a view is clicked (used to confirm send button was pressed)
+      - typeViewScrolled: triggered when content is scrolled (to find the input box)
+      - typeViewTextChanged: triggered when text changes in input fields
+
+    - canPerformGestures: allows the service to perform touch gestures (tap, swipe)
+    - canRetrieveWindowContent: allows reading the screen content (find send button, input field)
+    - packageNames: ONLY listens to WhatsApp Business (com.whatsapp.w4b) — not regular WhatsApp
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="
+        typeWindowContentChanged|
+        typeWindowStateChanged|
+        typeViewClicked|
+        typeViewScrolled|
+        typeViewTextChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="
+        flagDefault|
+        flagIncludeNotImportantViews|
+        flagReportViewIds"
+    android:canPerformGestures="true"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/accessibility_service_description"
+    android:notificationTimeout="100"
+    android:packageNames="com.whatsapp.w4b"
+    android:settingsActivity="com.orderflow.ui.settings.SettingsActivity" />

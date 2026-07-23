@@ -1,0 +1,170 @@
+// ============================================================
+// APP-LEVEL BUILD.GRADLE
+// Configures the :app module: SDK versions, build types,
+// View Binding, and all runtime dependencies.
+// ============================================================
+
+plugins {
+    // Apply the Android application plugin to this module
+    id 'com.android.application'
+
+    // Apply Google Services — reads google-services.json and configures Firebase
+    id 'com.google.gms.google-services'
+}
+
+android {
+    // Unique application identifier — matches our Java package structure
+    namespace 'com.orderflow'
+
+    // compileSdk: the API level used to compile; always use the latest stable
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.orderflow"
+
+        // minSdk 26 = Android 8.0 — required for modern notification listener APIs
+        minSdk 26
+
+        // targetSdk 34 = Android 14 — latest stable, enables all modern security features
+        targetSdk 34
+
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            // Debug builds are not minified for faster compilation and easy debugging
+            debuggable true
+            versionNameSuffix "-debug"
+            minifyEnabled false
+        }
+        release {
+            // Release builds are minified and obfuscated for security and smaller APK size
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        // Java 17 for modern language features (records, sealed classes in future phases)
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        // View Binding generates type-safe binding classes for every XML layout
+        // Eliminates all findViewById() calls — cleaner and crash-safe
+        viewBinding true
+    }
+
+    packaging {
+        resources {
+            // Exclude duplicate license files from dependencies to prevent build errors
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+
+    // ============================================================
+    // ANDROIDX CORE
+    // Provides backwards-compatible access to the latest Android
+    // framework APIs on older API levels.
+    // ============================================================
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.9.0'
+    implementation 'androidx.fragment:fragment:1.8.1'
+
+    // ============================================================
+    // MATERIAL DESIGN 3
+    // Provides all MD3 components: MaterialButton, MaterialCardView,
+    // TextInputLayout, BottomNavigationView, ChipGroup, etc.
+    // The WhatsApp color palette is applied through the MD3 theme system.
+    // ============================================================
+    implementation 'com.google.android.material:material:1.12.0'
+
+    // ============================================================
+    // LAYOUT LIBRARIES
+    // ConstraintLayout: build complex, responsive UI with flat view hierarchy.
+    // RecyclerView: efficient list rendering for keywords, logs, replies.
+    // SwipeRefreshLayout: pull-to-refresh gesture on all list screens.
+    // CardView: rounded card containers (though MD3 MaterialCardView is preferred).
+    // ============================================================
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+
+    // ============================================================
+    // LIFECYCLE — ViewModel + LiveData
+    // Core of the MVVM architecture pattern.
+    // ViewModel: holds UI state, survives configuration changes (screen rotation).
+    // LiveData: observable data holder that respects the Activity/Fragment lifecycle.
+    // lifecycle-common-java8: allows using DefaultLifecycleObserver in Java 8+ style.
+    // ============================================================
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.7.0'
+
+    // ============================================================
+    // NAVIGATION COMPONENT
+    // Single-activity architecture: one Activity hosts all Fragments.
+    // navigation-fragment: integrates Navigation with Fragment back stack.
+    // navigation-ui: ties Navigation to BottomNavigationView and Toolbar.
+    // ============================================================
+    implementation 'androidx.navigation:navigation-fragment:2.7.7'
+    implementation 'androidx.navigation:navigation-ui:2.7.7'
+
+    // ============================================================
+    // FIREBASE BOM (Bill of Materials)
+    // The BOM locks all Firebase library versions to a single compatible set.
+    // We declare Firebase libraries WITHOUT version numbers below — the BOM
+    // automatically selects the correct compatible version for each.
+    // ============================================================
+    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+
+    // Firebase Authentication — handles email/password login, sign-out, password reset
+    implementation 'com.google.firebase:firebase-auth'
+
+    // Firebase Firestore — cloud NoSQL database for keywords, replies, logs, settings
+    implementation 'com.google.firebase:firebase-firestore'
+
+    // Firebase Storage — stores JSON backup files in cloud storage buckets
+    implementation 'com.google.firebase:firebase-storage'
+
+    // ============================================================
+    // GSON
+    // Google's JSON library for serializing/deserializing Java objects.
+    // Used for: Firebase backup/restore (converting Firestore data to/from JSON files).
+    // ============================================================
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // ============================================================
+    // SHIMMER (Facebook)
+    // Renders animated skeleton placeholders while Firestore data loads.
+    // Prevents jarring empty-screen states — gives the app a polished feel.
+    // ============================================================
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
+    // ============================================================
+    // LOTTIE (Airbnb)
+    // Renders After Effects JSON animations at runtime.
+    // Used for: empty states (no keywords yet), error states, onboarding illustrations,
+    // and the success animation after a keyword is saved.
+    // ============================================================
+    implementation 'com.airbnb.android:lottie:6.4.0'
+
+    // ============================================================
+    // TESTING
+    // ============================================================
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+}

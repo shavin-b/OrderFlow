@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         DARK MODE THEME OVERRIDE
+         This file lives in values-night/ so Android automatically
+         applies these overrides when the device is in dark mode.
+         Only the color attributes that differ from light mode are
+         overridden here — all other styles from values/themes.xml
+         remain the same.
+         ============================================================ -->
+    <style name="Theme.OrderFlow" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- ── Primary (lighter teal for dark backgrounds) ──────────── -->
+        <item name="colorPrimary">@color/md3_primary_dark</item>
+        <item name="colorOnPrimary">@color/md3_on_primary_dark</item>
+        <item name="colorPrimaryContainer">@color/md3_primary_container_dark</item>
+        <item name="colorOnPrimaryContainer">@color/md3_on_primary_container_dark</item>
+
+        <!-- ── Secondary ─────────────────────────────────────────────── -->
+        <item name="colorSecondary">@color/md3_secondary_dark</item>
+        <item name="colorOnSecondary">@color/md3_on_secondary_dark</item>
+        <item name="colorSecondaryContainer">@color/md3_secondary_container_dark</item>
+        <item name="colorOnSecondaryContainer">@color/md3_on_secondary_container_dark</item>
+
+        <!-- ── Tertiary ──────────────────────────────────────────────── -->
+        <item name="colorTertiary">@color/md3_tertiary_dark</item>
+        <item name="colorOnTertiary">@color/md3_on_tertiary_dark</item>
+        <item name="colorTertiaryContainer">@color/md3_tertiary_container_dark</item>
+        <item name="colorOnTertiaryContainer">@color/md3_on_tertiary_container_dark</item>
+
+        <!-- ── Error ─────────────────────────────────────────────────── -->
+        <item name="colorError">@color/md3_error_dark</item>
+        <item name="colorOnError">@color/md3_on_error_dark</item>
+        <item name="colorErrorContainer">@color/md3_error_container_dark</item>
+        <item name="colorOnErrorContainer">@color/md3_on_error_container_dark</item>
+
+        <!-- ── Background: WhatsApp exact dark background (#111B21) ──── -->
+        <item name="android:colorBackground">@color/md3_background_dark</item>
+        <item name="colorOnBackground">@color/md3_on_background_dark</item>
+
+        <!-- ── Surface: WhatsApp exact dark surface (#1F2C34) ────────── -->
+        <item name="colorSurface">@color/md3_surface_dark</item>
+        <item name="colorOnSurface">@color/md3_on_surface_dark</item>
+        <item name="colorSurfaceVariant">@color/md3_surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/md3_on_surface_variant_dark</item>
+
+        <!-- Surface containers -->
+        <item name="colorSurfaceContainerLowest">@color/md3_surface_container_lowest_dark</item>
+        <item name="colorSurfaceContainerLow">@color/md3_surface_container_low_dark</item>
+        <item name="colorSurfaceContainer">@color/md3_surface_container_dark</item>
+        <item name="colorSurfaceContainerHigh">@color/md3_surface_container_high_dark</item>
+        <item name="colorSurfaceContainerHighest">@color/md3_surface_container_highest_dark</item>
+
+        <!-- ── Outline ───────────────────────────────────────────────── -->
+        <item name="colorOutline">@color/md3_outline_dark</item>
+        <item name="colorOutlineVariant">@color/md3_outline_variant_dark</item>
+
+        <!-- ── System Bars ───────────────────────────────────────────── -->
+        <item name="android:statusBarColor">@color/wa_dark_bg</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:navigationBarColor">@color/wa_dark_surface</item>
+
+    </style>
+
+    <!-- Dark Splash Theme -->
+    <style name="Theme.OrderFlow.Splash" parent="Theme.OrderFlow">
+        <item name="android:windowBackground">@drawable/bg_splash_gradient</item>
+        <item name="android:statusBarColor">@color/wa_darkest_teal</item>
+        <item name="android:navigationBarColor">@color/wa_darkest_teal</item>
+    </style>
+
+</resources>

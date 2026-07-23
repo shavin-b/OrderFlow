@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         ORDERFLOW — LIGHT MODE THEME
+         Parent: Theme.Material3.DayNight.NoActionBar
+         - DayNight: automatically switches between light/dark based on system setting
+         - NoActionBar: we use a custom Toolbar in each screen, not the default ActionBar
+         ============================================================ -->
+    <style name="Theme.OrderFlow" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- ── Primary (WhatsApp darkest teal) ─────────────────────── -->
+        <item name="colorPrimary">@color/md3_primary</item>
+        <item name="colorOnPrimary">@color/md3_on_primary</item>
+        <item name="colorPrimaryContainer">@color/md3_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/md3_on_primary_container</item>
+
+        <!-- ── Secondary (muted green tone) ─────────────────────────── -->
+        <item name="colorSecondary">@color/md3_secondary</item>
+        <item name="colorOnSecondary">@color/md3_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/md3_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/md3_on_secondary_container</item>
+
+        <!-- ── Tertiary (blue teal — informational) ──────────────────── -->
+        <item name="colorTertiary">@color/md3_tertiary</item>
+        <item name="colorOnTertiary">@color/md3_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/md3_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/md3_on_tertiary_container</item>
+
+        <!-- ── Error ─────────────────────────────────────────────────── -->
+        <item name="colorError">@color/md3_error</item>
+        <item name="colorOnError">@color/md3_on_error</item>
+        <item name="colorErrorContainer">@color/md3_error_container</item>
+        <item name="colorOnErrorContainer">@color/md3_on_error_container</item>
+
+        <!-- ── Background & Surface ──────────────────────────────────── -->
+        <item name="android:colorBackground">@color/md3_background</item>
+        <item name="colorOnBackground">@color/md3_on_background</item>
+        <item name="colorSurface">@color/md3_surface</item>
+        <item name="colorOnSurface">@color/md3_on_surface</item>
+        <item name="colorSurfaceVariant">@color/md3_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/md3_on_surface_variant</item>
+
+        <!-- Surface containers (used by MD3 components internally) -->
+        <item name="colorSurfaceContainerLowest">@color/md3_surface_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/md3_surface_container_low</item>
+        <item name="colorSurfaceContainer">@color/md3_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/md3_surface_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/md3_surface_container_highest</item>
+
+        <!-- ── Outline ───────────────────────────────────────────────── -->
+        <item name="colorOutline">@color/md3_outline</item>
+        <item name="colorOutlineVariant">@color/md3_outline_variant</item>
+
+        <!-- ── System Bars ───────────────────────────────────────────── -->
+        <!-- Status bar uses primary color for a WhatsApp-like look -->
+        <item name="android:statusBarColor">@color/md3_primary</item>
+        <!-- Light status bar = false means white icons on the dark status bar -->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <!-- Navigation bar matches the surface color -->
+        <item name="android:navigationBarColor">@color/md3_surface</item>
+
+        <!-- ── Shape System ──────────────────────────────────────────── -->
+        <!-- MD3 shape tokens — controls corner radius of components globally -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.OrderFlow.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.OrderFlow.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.OrderFlow.Large</item>
+
+        <!-- ── FAB Style ─────────────────────────────────────────────── -->
+        <item name="floatingActionButtonStyle">@style/Widget.OrderFlow.FloatingActionButton</item>
+
+        <!-- ── Bottom Navigation Style ──────────────────────────────── -->
+        <item name="bottomNavigationStyle">@style/Widget.OrderFlow.BottomNavigationView</item>
+
+    </style>
+
+    <!-- ============================================================
+         SPLASH SCREEN THEME
+         Applied to SplashActivity — full-screen WhatsApp gradient.
+         ============================================================ -->
+    <style name="Theme.OrderFlow.Splash" parent="Theme.OrderFlow">
+        <item name="android:windowBackground">@drawable/bg_splash_gradient</item>
+        <item name="android:statusBarColor">@color/wa_darkest_teal</item>
+        <item name="android:navigationBarColor">@color/wa_darkest_teal</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+    </style>
+
+    <!-- ============================================================
+         SHAPE APPEARANCE STYLES
+         Defines the corner radius system for the entire app.
+         MD3 uses a consistent shape token system.
+         ============================================================ -->
+    <style name="ShapeAppearance.OrderFlow.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">@dimen/radius_small</item>
+    </style>
+
+    <style name="ShapeAppearance.OrderFlow.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">@dimen/radius_medium</item>
+    </style>
+
+    <style name="ShapeAppearance.OrderFlow.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerSize">@dimen/radius_large</item>
+    </style>
+
+    <style name="ShapeAppearance.OrderFlow.ExtraLarge" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">@dimen/radius_extra_large</item>
+    </style>
+
+    <!-- ============================================================
+         FAB (Floating Action Button) STYLE
+         ============================================================ -->
+    <style name="Widget.OrderFlow.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="shapeAppearance">@style/ShapeAppearance.OrderFlow.Large</item>
+        <item name="backgroundTint">@color/wa_green</item>
+        <item name="tint">@color/white</item>
+    </style>
+
+    <!-- ============================================================
+         BOTTOM NAVIGATION VIEW STYLE
+         WhatsApp green tint for selected item indicator.
+         ============================================================ -->
+    <style name="Widget.OrderFlow.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_icon_color</item>
+        <item name="itemTextColor">@color/bottom_nav_icon_color</item>
+    </style>
+
+    <!-- ============================================================
+         CARD STYLE
+         All cards in the app use this style for consistency.
+         ============================================================ -->
+    <style name="Widget.OrderFlow.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/radius_medium</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="contentPadding">@dimen/card_padding</item>
+    </style>
+
+    <!-- ============================================================
+         TOOLBAR STYLE
+         ============================================================ -->
+    <style name="Widget.OrderFlow.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/md3_primary</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">@color/md3_primary_container</item>
+    </style>
+
+    <!-- ============================================================
+         TEXT INPUT LAYOUT STYLE
+         OutlinedBox is the standard MD3 text field style.
+         ============================================================ -->
+    <style name="Widget.OrderFlow.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_small</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_small</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_small</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_small</item>
+    </style>
+
+    <!-- ============================================================
+         BUTTON STYLES
+         ============================================================ -->
+    <style name="Widget.OrderFlow.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:backgroundTint">@color/md3_primary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">@dimen/radius_medium</item>
+    </style>
+
+    <style name="Widget.OrderFlow.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/md3_primary</item>
+        <item name="android:textColor">@color/md3_primary</item>
+        <item name="cornerRadius">@dimen/radius_medium</item>
+    </style>
+
+    <style name="Widget.OrderFlow.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/md3_primary</item>
+    </style>
+
+    <!-- ============================================================
+         CHIP STYLE (for keyword tags, filter chips, etc.)
+         ============================================================ -->
+    <style name="Widget.OrderFlow.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipCornerRadius">@dimen/radius_small</item>
+    </style>
+
+    <!-- ============================================================
+         DIALOG STYLE
+         ============================================================ -->
+    <style name="Theme.OrderFlow.Dialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="cornerRadius">@dimen/radius_large</item>
+    </style>
+
+    <!-- ============================================================
+         BADGE STYLE (for status indicators on log entries)
+         ============================================================ -->
+    <style name="Widget.OrderFlow.Badge" parent="" />
+
+    <style name="Widget.OrderFlow.Badge.Success" parent="Widget.OrderFlow.Badge">
+        <item name="android:background">@drawable/bg_badge_success</item>
+        <item name="android:paddingStart">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/badge_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/badge_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/badge_padding_vertical</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+</resources>

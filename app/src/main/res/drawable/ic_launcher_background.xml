@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ORDERFLOW APP ICON — BACKGROUND LAYER
+    WhatsApp signature green background for the adaptive app icon.
+    The foreground speech bubble (ic_launcher_foreground.xml) sits on top of this.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/wa_green" />
+</shape>
