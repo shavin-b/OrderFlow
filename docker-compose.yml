@@ -1,0 +1,88 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: orderflow-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-orderflow}
+      MYSQL_USER: ${DB_USERNAME:-orderflow_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-orderflow_pass}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME:-orderflow_user}", "-p${DB_PASSWORD:-orderflow_pass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - orderflow-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: orderflow-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-orderflow}
+      DB_USERNAME: ${DB_USERNAME:-orderflow_user}
+      DB_PASSWORD: ${DB_PASSWORD:-orderflow_pass}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-dev-access-token}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-dev-phone-id}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-dev-verify-token}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-dev-app-secret}
+      SECURITY_API_KEYS: ${SECURITY_API_KEYS:-dev-api-key-change-in-production}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-production}
+    expose:
+      - "8080"
+    volumes:
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/v1/management/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - orderflow-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: orderflow-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - orderflow-network
+
+volumes:
+  mysql_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  orderflow-network:
+    driver: bridge

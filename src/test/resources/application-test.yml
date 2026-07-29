@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+
+whatsapp:
+  api:
+    base-url: https://graph.facebook.com/v20.0
+    access-token: test_access_token
+    phone-number-id: test_phone_id
+    verify-token: test_verify_token
+    app-secret: test_app_secret
+
+security:
+  api-keys: dev-api-key-change-in-production
