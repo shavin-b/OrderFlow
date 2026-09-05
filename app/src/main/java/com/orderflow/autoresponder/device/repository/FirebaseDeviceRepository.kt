@@ -42,10 +42,20 @@ class FirebaseDeviceRepository @Inject constructor(
 
     override suspend fun acknowledgeCommand(command: DeviceCommand): Result<Unit> {
         return try {
-            firestore.collection("deviceCommands")
+            // Acknowledge in global commands collection
+            firestore.collection("commands")
                 .document(command.commandId)
                 .set(command)
                 .await()
+            
+            // Also acknowledge in device sub-collection (common pattern for dashboards)
+            firestore.collection("devices")
+                .document(command.deviceId)
+                .collection("commands")
+                .document(command.commandId)
+                .set(command)
+                .await()
+
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -61,10 +71,25 @@ class FirebaseDeviceRepository @Inject constructor(
                     return@addSnapshotListener
                 }
                 if (snapshot != null && snapshot.exists()) {
+                    val data = snapshot.data
+                    com.orderflow.autoresponder.core.logger.StructuredLogger.d("FirebaseDeviceRepository", "[RAW] Snapshot data: $data")
                     trySend(snapshot.toObject(DeviceInfo::class.java))
                 } else {
                     trySend(null)
                 }
+            }
+        awaitClose { listener.remove() }
+    }
+
+    override fun getDeviceRawFlow(deviceId: String): Flow<Map<String, Any>?> = callbackFlow {
+        val listener = firestore.collection("devices")
+            .document(deviceId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.data)
             }
         awaitClose { listener.remove() }
     }

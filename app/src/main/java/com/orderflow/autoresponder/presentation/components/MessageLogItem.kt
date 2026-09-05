@@ -55,6 +55,8 @@ fun MessageLogItem(log: MessageLog) {
                     MessageStatus.FAILED -> Pair("FAILED", StatusFailed)
                     MessageStatus.QUEUED -> Pair("QUEUED", StatusWarning)
                     MessageStatus.IGNORED -> Pair("IGNORED", BrandTextSecondary)
+                    MessageStatus.DUPLICATE -> Pair("DUPLICATE", BrandTextSecondary)
+                    MessageStatus.SKIPPED -> Pair("SKIPPED", StatusWarning)
                 }
 
                 Text(

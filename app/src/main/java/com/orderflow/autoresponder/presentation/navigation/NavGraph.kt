@@ -16,6 +16,8 @@ import com.orderflow.autoresponder.presentation.logs.LogsViewModel
 import com.orderflow.autoresponder.presentation.rules.AddEditRuleScreen
 import com.orderflow.autoresponder.presentation.rules.RulesListScreen
 import com.orderflow.autoresponder.presentation.rules.RulesViewModel
+import com.orderflow.autoresponder.presentation.settings.DiagnosticsScreen
+import com.orderflow.autoresponder.presentation.settings.DiagnosticsViewModel
 import com.orderflow.autoresponder.presentation.settings.SettingsScreen
 import com.orderflow.autoresponder.presentation.settings.SettingsViewModel
 
@@ -26,6 +28,7 @@ object Screen {
     const val LOGS = "logs"
     const val CUSTOMERS = "customers"
     const val SETTINGS = "settings"
+    const val DIAGNOSTICS = "diagnostics"
 }
 
 @Composable
@@ -45,7 +48,8 @@ fun NavGraph(
                 onNavigateToRules = { navController.navigate(Screen.RULES_LIST) },
                 onNavigateToLogs = { navController.navigate(Screen.LOGS) },
                 onNavigateToCustomers = { navController.navigate(Screen.CUSTOMERS) },
-                onNavigateToSettings = { navController.navigate(Screen.SETTINGS) }
+                onNavigateToSettings = { navController.navigate(Screen.SETTINGS) },
+                onNavigateToDiagnostics = { navController.navigate(Screen.DIAGNOSTICS) }
             )
         }
 
@@ -93,6 +97,14 @@ fun NavGraph(
         composable(Screen.SETTINGS) {
             val viewModel: SettingsViewModel = hiltViewModel()
             SettingsScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.DIAGNOSTICS) {
+            val viewModel: DiagnosticsViewModel = hiltViewModel()
+            DiagnosticsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }
             )

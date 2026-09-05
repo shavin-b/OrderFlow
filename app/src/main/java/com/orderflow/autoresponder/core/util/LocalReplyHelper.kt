@@ -22,6 +22,8 @@ class LocalReplyHelper @Inject constructor(
         remoteInput: RemoteInput,
         replyText: String
     ): Boolean {
+        if (replyText.isBlank()) return false
+        
         return try {
             val results = Bundle().apply {
                 putString(remoteInput.resultKey, replyText)
@@ -37,7 +39,7 @@ class LocalReplyHelper @Inject constructor(
             StructuredLogger.i("LocalReplyHelper", "Successfully executed direct reply: $replyText")
             true
         } catch (e: Exception) {
-            StructuredLogger.e("LocalReplyHelper", "Failed to send local reply", e)
+            StructuredLogger.e("LocalReplyHelper", "Failed to send local reply to ${pendingIntent.creatorPackage}", e)
             false
         }
     }

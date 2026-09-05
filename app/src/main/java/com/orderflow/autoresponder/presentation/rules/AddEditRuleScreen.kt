@@ -1,16 +1,23 @@
 package com.orderflow.autoresponder.presentation.rules
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.orderflow.autoresponder.domain.model.AutoReplyMessage
 import com.orderflow.autoresponder.domain.model.AutoReplyRule
 import com.orderflow.autoresponder.domain.model.MatchOption
 import com.orderflow.autoresponder.presentation.components.AppTopBar
@@ -25,10 +32,20 @@ fun AddEditRuleScreen(
 ) {
     var ruleName by remember { mutableStateOf(editingRule?.ruleName ?: "") }
     var keywordsCsv by remember { mutableStateOf(editingRule?.keywordsCsv ?: "") }
-    var replyMessage by remember { mutableStateOf(editingRule?.replyMessagesJson ?: "") }
     var selectedMatchOption by remember { mutableStateOf(editingRule?.matchOption ?: MatchOption.EXACT) }
-    var delaySecondsText by remember { mutableStateOf(editingRule?.delaySeconds?.toString() ?: "0") }
-    var replySequential by remember { mutableStateOf(editingRule?.replySequential ?: false) }
+    
+    var initialDelayText by remember { mutableStateOf(editingRule?.initialDelaySeconds?.toString() ?: "0") }
+    var replyDelayText by remember { mutableStateOf(editingRule?.delaySeconds?.toString() ?: "0") }
+    
+    var priorityText by remember { mutableStateOf(editingRule?.priority?.toString() ?: "0") }
+    var caseSensitive by remember { mutableStateOf(editingRule?.caseSensitive ?: false) }
+    var enabledForGroups by remember { mutableStateOf(editingRule?.enabledForGroups ?: false) }
+
+    // Use a snapshots state list for messages
+    val messagesList = remember { 
+        val initialList = editingRule?.messages?.sortedBy { it.position } ?: listOf(AutoReplyMessage(message = ""))
+        initialList.toMutableStateList() 
+    }
 
     var expandedDropdown by remember { mutableStateOf(false) }
 
@@ -49,6 +66,9 @@ fun AddEditRuleScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Text("Rule Configuration", color = BrandAccent, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = ruleName,
                 onValueChange = { ruleName = it },
@@ -101,64 +121,149 @@ fun AddEditRuleScreen(
                 colors = customTextFieldColors()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("Automated Replies", color = BrandAccent, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = replyMessage,
-                onValueChange = { replyMessage = it },
-                label = { Text("Automated Reply Message") },
-                placeholder = { Text("Hi %name%! Separate messages with || for sequential sending.") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                colors = customTextFieldColors()
-            )
+            messagesList.forEachIndexed { index, replyMsg ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = replyMsg.message,
+                            onValueChange = { 
+                                messagesList[index] = messagesList[index].copy(message = it)
+                            },
+                            label = { Text("Message ${index + 1}") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 2,
+                            colors = customTextFieldColors()
+                        )
+                    }
+                    
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        IconButton(onClick = {
+                            if (index > 0) {
+                                val item = messagesList.removeAt(index)
+                                messagesList.add(index - 1, item)
+                            }
+                        }) {
+                            Icon(Icons.Default.ArrowUpward, contentDescription = "Move Up", tint = BrandTextSecondary)
+                        }
+                        IconButton(onClick = {
+                            if (messagesList.size > 1) {
+                                messagesList.removeAt(index)
+                            }
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = StatusFailed)
+                        }
+                        IconButton(onClick = {
+                            if (index < messagesList.size - 1) {
+                                val item = messagesList.removeAt(index)
+                                messagesList.add(index + 1, item)
+                            }
+                        }) {
+                            Icon(Icons.Default.ArrowDownward, contentDescription = "Move Down", tint = BrandTextSecondary)
+                        }
+                    }
+                }
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Button(
+                onClick = { messagesList.add(AutoReplyMessage(message = "")) },
+                modifier = Modifier.padding(vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandAccent.copy(alpha = 0.2f), contentColor = BrandAccent)
             ) {
-                Checkbox(
-                    checked = replySequential,
-                    onCheckedChange = { replySequential = it },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = BrandGreen,
-                        uncheckedColor = BrandTextSecondary
-                    )
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Add Another Reply")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Sequence Timing", color = BrandAccent, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = initialDelayText,
+                    onValueChange = { initialDelayText = it },
+                    label = { Text("Initial Delay (s)") },
+                    modifier = Modifier.weight(1f),
+                    colors = customTextFieldColors()
                 )
-                Text(
-                    text = "Send Multiple Messages Sequentially",
-                    color = BrandTextPrimary,
-                    style = MaterialTheme.typography.bodyMedium
+                OutlinedTextField(
+                    value = replyDelayText,
+                    onValueChange = { replyDelayText = it },
+                    label = { Text("Between Replies (s)") },
+                    modifier = Modifier.weight(1f),
+                    colors = customTextFieldColors()
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+            Text("Advanced Options", color = BrandAccent, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = delaySecondsText,
-                onValueChange = { delaySecondsText = it },
-                label = { Text("Reply Delay (seconds between messages)") },
+                value = priorityText,
+                onValueChange = { priorityText = it },
+                label = { Text("Priority (Higher matches first)") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = customTextFieldColors()
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = caseSensitive,
+                    onCheckedChange = { caseSensitive = it },
+                    colors = CheckboxDefaults.colors(checkedColor = BrandGreen)
+                )
+                Text(text = "Case Sensitive Matching", color = BrandTextPrimary)
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = enabledForGroups,
+                    onCheckedChange = { enabledForGroups = it },
+                    colors = CheckboxDefaults.colors(checkedColor = BrandGreen)
+                )
+                Text(text = "Enable for Group Chats", color = BrandTextPrimary)
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    val delay = delaySecondsText.toIntOrNull() ?: 0
-                    viewModel.saveRule(
-                        id = editingRule?.id ?: 0L,
-                        ruleName = ruleName,
-                        keywordsCsv = keywordsCsv,
-                        replyMessage = replyMessage,
-                        matchOption = selectedMatchOption,
-                        delaySeconds = delay,
-                        replySequential = replySequential
-                    )
-                    onNavigateBack()
+                    val initialDelay = initialDelayText.toIntOrNull() ?: 0
+                    val replyDelay = replyDelayText.toIntOrNull() ?: 0
+                    val priority = priorityText.toIntOrNull() ?: 0
+                    
+                    // Final position update
+                    val finalMessages = messagesList.mapIndexed { i, msg -> 
+                        msg.copy(position = i) 
+                    }.filter { it.message.isNotBlank() }
+
+                    if (finalMessages.isNotEmpty()) {
+                        viewModel.saveRule(
+                            id = editingRule?.id ?: 0L,
+                            ruleName = ruleName,
+                            keywordsCsv = keywordsCsv,
+                            messages = finalMessages,
+                            matchOption = selectedMatchOption,
+                            initialDelaySeconds = initialDelay,
+                            delaySeconds = replyDelay,
+                            priority = priority,
+                            caseSensitive = caseSensitive,
+                            enabledForGroups = enabledForGroups
+                        )
+                        onNavigateBack()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
@@ -169,6 +274,8 @@ fun AddEditRuleScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
             }
+            
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }

@@ -94,8 +94,13 @@ fun RuleCard(
                     fontSize = 13.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                val replySummary = if (rule.messages.isNotEmpty()) {
+                    val first = rule.messages.first().message
+                    if (rule.messages.size > 1) "$first (+${rule.messages.size - 1} more)" else first
+                } else "No replies configured"
+
                 Text(
-                    text = "Reply: ${rule.replyMessagesJson}",
+                    text = "Reply: $replySummary",
                     style = MaterialTheme.typography.bodyMedium,
                     color = BrandTextSecondary,
                     fontSize = 13.sp

@@ -24,4 +24,13 @@ interface MessageLogDao {
 
     @Query("SELECT COUNT(*) FROM message_logs WHERE status = 'SENT' AND timestamp >= :startTimestamp")
     suspend fun getCountSince(startTimestamp: Long): Int
+
+    @Query("SELECT COUNT(*) FROM message_logs")
+    suspend fun getTotalCount(): Int
+
+    @Query("SELECT * FROM message_logs ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentLogs(limit: Int): Flow<List<MessageLogEntity>>
+
+    @Query("SELECT COUNT(*) FROM message_logs WHERE status = :status")
+    suspend fun getCountByStatus(status: String): Int
 }

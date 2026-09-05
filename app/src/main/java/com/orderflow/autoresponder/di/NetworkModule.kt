@@ -1,5 +1,6 @@
 package com.orderflow.autoresponder.di
 
+import com.orderflow.autoresponder.data.remote.MetaCredentialFetchService
 import com.orderflow.autoresponder.data.remote.MetaWhatsAppApiService
 import dagger.Module
 import dagger.Provides
@@ -46,5 +47,11 @@ object NetworkModule {
     @Singleton
     fun provideMetaWhatsAppApiService(retrofit: Retrofit): MetaWhatsAppApiService {
         return retrofit.create(MetaWhatsAppApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMetaCredentialFetchService(retrofit: Retrofit): MetaCredentialFetchService {
+        return retrofit.create(MetaCredentialFetchService::class.java)
     }
 }

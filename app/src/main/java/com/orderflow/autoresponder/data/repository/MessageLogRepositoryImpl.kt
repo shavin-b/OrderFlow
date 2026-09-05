@@ -39,4 +39,16 @@ class MessageLogRepositoryImpl @Inject constructor(
         }
         return messageLogDao.getCountSince(calendar.timeInMillis)
     }
+
+    override suspend fun getTotalCount(): Int {
+        return messageLogDao.getTotalCount()
+    }
+
+    override suspend fun getCountByStatus(status: com.orderflow.autoresponder.domain.model.MessageStatus): Int {
+        return messageLogDao.getCountByStatus(status.name)
+    }
+
+    override fun getRecentLogs(limit: Int): Flow<List<MessageLog>> {
+        return messageLogDao.getRecentLogs(limit).map { list -> list.map { it.toDomainModel() } }
+    }
 }

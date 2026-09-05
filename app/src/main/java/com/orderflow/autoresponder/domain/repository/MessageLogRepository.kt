@@ -9,4 +9,7 @@ interface MessageLogRepository {
     suspend fun insertLog(log: MessageLog): Long
     suspend fun clearLogs()
     suspend fun getTodayRepliedCount(): Int
+    suspend fun getTotalCount(): Int
+    suspend fun getCountByStatus(status: com.orderflow.autoresponder.domain.model.MessageStatus): Int
+    fun getRecentLogs(limit: Int): Flow<List<MessageLog>>
 }

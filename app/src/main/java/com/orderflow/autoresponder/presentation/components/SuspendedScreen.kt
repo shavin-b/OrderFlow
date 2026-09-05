@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,11 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SuspendedScreen() {
+fun SuspendedScreen(
+    isAdminLocked: Boolean,
+    subscriptionStatus: String
+) {
     // Intercept back button to keep user on this screen
     BackHandler(enabled = true) {
         // Do nothing, effectively blocking the back button
     }
+
+    val isExpired = subscriptionStatus == "EXPIRED" || subscriptionStatus == "SUSPENDED"
 
     Column(
         modifier = Modifier
@@ -36,7 +42,7 @@ fun SuspendedScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.Lock,
+            imageVector = if (isAdminLocked) Icons.Default.Lock else Icons.Default.Warning,
             contentDescription = "Locked",
             modifier = Modifier.size(80.dp),
             tint = Color.Red
@@ -44,19 +50,45 @@ fun SuspendedScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        if (isAdminLocked) {
+            // Manual Admin Lock
+            LockMessage(
+                english = "Your application has been locked by the administrator.",
+                sinhala = "පරිපාලක විසින් ඔබගේ application එක lock කර ඇත."
+            )
+        } else if (isExpired) {
+            // Subscription Expiry
+            LockMessage(
+                english = "Your subscription period has expired. Please subscribe again to continue using this service.",
+                sinhala = "ඔබගේ subscription කාලය අවසන් වී ඇත. නැවත subscribe කර මෙම සේවාව ලබා ගන්න."
+            )
+        } else {
+            // Generic fallback
+            LockMessage(
+                english = "Your access is restricted. Please contact support.",
+                sinhala = "ඔබගේ ප්‍රවේශය සීමා කර ඇත. කරුණාකර සහාය අමතන්න."
+            )
+        }
+    }
+}
+
+@Composable
+private fun LockMessage(english: String, sinhala: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Your App Access is Locked!",
+            text = "Locked / සීමා කර ඇත",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = Color.Red,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Your subscription has expired. Please renew your plan now to restore full access and keep using all features.",
+            text = english,
             style = MaterialTheme.typography.bodyLarge,
+            color = Color.White,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp
         )
@@ -64,20 +96,11 @@ fun SuspendedScreen() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "App එකෙහි භාවිතය තාවකාලිකව අත්හිටුවා ඇත!",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = Color.Red,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "ඔබගේ Subscription කාලය අවසන් වී ඇත. සියලුම පහසුකම් නැවත සක්‍රිය කරගැනීමට කරුණාකර දැන්ම ඔබගේ Plan එක Renew කරන්න.",
+            text = sinhala,
             style = MaterialTheme.typography.bodyLarge,
+            color = Color.White,
             textAlign = TextAlign.Center,
-            lineHeight = 24.sp
+            lineHeight = 28.sp
         )
     }
 }

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -26,17 +27,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             OrderFlowTheme {
-                val isSubSuspended by secureStorage.isAppSuspendedFlow().collectAsState(initial = secureStorage.isAppSuspended())
-                val isAdminLocked by secureStorage.isAdminLockedFlow().collectAsState(initial = secureStorage.isAdminLocked())
+                val isBlocked by secureStorage.applicationBlockFlow().collectAsState(initial = secureStorage.isEffectivelyBlocked())
+                val context = androidx.compose.ui.platform.LocalContext.current
+
+                LaunchedEffect(isBlocked) {
+                    if (isBlocked) {
+                        android.widget.Toast.makeText(context, "Access Restricted by Administrator", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
                 
-                val isLocked = isSubSuspended || isAdminLocked
+                android.util.Log.d("OrderFlow", "[MainActivity] UI Recomposing. isBlocked=$isBlocked, adminLocked=${secureStorage.isAdminLocked()}, subActive=${secureStorage.isSubscriptionActive()}")
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (isLocked) {
-                        SuspendedScreen()
+                    if (isBlocked) {
+                        // Pass current state reason to screen
+                        SuspendedScreen(
+                            isAdminLocked = secureStorage.isAdminLocked(),
+                            subscriptionStatus = secureStorage.getSubscriptionStatus()
+                        )
                     } else {
                         NavGraph()
                     }

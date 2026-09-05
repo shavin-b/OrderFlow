@@ -2,6 +2,9 @@ package com.orderflow.autoresponder.presentation.settings
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,29 +21,26 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.ReplyAll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +57,7 @@ import com.orderflow.autoresponder.presentation.theme.BrandTextSecondary
 import com.orderflow.autoresponder.presentation.theme.StatusFailed
 import com.orderflow.autoresponder.presentation.theme.StatusSuccess
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
@@ -64,15 +65,11 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
         viewModel.checkNotificationAccess()
     }
-
-    var phoneNumberId by remember(state.credentials) { mutableStateOf(state.credentials.phoneNumberId) }
-    var accessToken by remember(state.credentials) { mutableStateOf(state.credentials.accessToken) }
-    var businessAccountId by remember(state.credentials) { mutableStateOf(state.credentials.businessAccountId) }
-    var webhookVerifyToken by remember(state.credentials) { mutableStateOf(state.credentials.webhookVerifyToken) }
 
     Scaffold(
         topBar = {
@@ -97,12 +94,23 @@ fun SettingsScreen(
                 color = BrandTextPrimary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             PermissionRow(
                 title = "Notification Access",
                 isGranted = state.isNotificationAccessGranted,
                 onGrantClick = {
                     context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            PermissionRow(
+                title = "Battery Optimization",
+                isGranted = state.isBatteryOptimizationDisabled,
+                onGrantClick = {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    context.startActivity(intent)
                 }
             )
 
@@ -156,90 +164,112 @@ fun SettingsScreen(
                     )
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
             HorizontalDivider(color = BrandTextSecondary.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Meta API Credentials",
+                text = "WhatsApp Business Meta API Setup",
                 style = MaterialTheme.typography.titleLarge,
                 color = BrandTextPrimary
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Configure your Meta developer account to send verified WhatsApp messages.",
+                style = MaterialTheme.typography.bodySmall,
+                color = BrandTextSecondary
+            )
+
+            // Result / Error Banner
+            val bannerText = state.testResultMessage ?: state.validationErrorMessage ?: state.bannerMessage
+            val isBannerSuccess = state.isTestSuccess || (state.bannerMessage != null && state.bannerIsSuccess)
+            AnimatedVisibility(
+                visible = bannerText != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                if (bannerText != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isBannerSuccess) StatusSuccess.copy(alpha = 0.15f)
+                                else StatusFailed.copy(alpha = 0.15f)
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isBannerSuccess) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                            contentDescription = null,
+                            tint = if (isBannerSuccess) StatusSuccess else StatusFailed,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(
+                            text = bannerText,
+                            color = if (isBannerSuccess) StatusSuccess else StatusFailed,
+                            fontSize = 13.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = phoneNumberId,
-                onValueChange = { phoneNumberId = it },
-                label = { Text("Phone Number ID") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = customTextFieldColors()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = accessToken,
-                onValueChange = { accessToken = it },
-                label = { Text("Permanent Access Token") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                colors = customTextFieldColors()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = businessAccountId,
-                onValueChange = { businessAccountId = it },
-                label = { Text("Business Account ID") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = customTextFieldColors()
+            // Step-by-step Meta Credentials Wizard
+            MetaCredentialsWizard(
+                state = state,
+                onVerifyToken = { token ->
+                    viewModel.verifyToken(token)
+                },
+                onFetchPhoneNumbers = {
+                    viewModel.fetchPhoneNumbers()
+                },
+                onSelectPhoneNumber = { phone ->
+                    viewModel.selectPhoneNumber(phone)
+                },
+                onManualPhoneNumberChange = { id ->
+                    val updated = state.credentials.copy(phoneNumberId = id)
+                    viewModel.saveCredentials(updated)
+                },
+                onBusinessIdChange = { id ->
+                    viewModel.updateBusinessAccountId(id)
+                },
+                onWebhookTokenChange = { token ->
+                    viewModel.updateWebhookToken(token)
+                },
+                onGenerateWebhookToken = {
+                    viewModel.generateWebhookToken()
+                },
+                onOpenWebView = {
+                    viewModel.showWebViewSheet()
+                },
+                onSaveAndTest = {
+                    viewModel.saveAndTest()
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    val newCreds = MetaCredentials(
-                        phoneNumberId = phoneNumberId,
-                        accessToken = accessToken,
-                        businessAccountId = businessAccountId,
-                        webhookVerifyToken = webhookVerifyToken
-                    )
-                    viewModel.saveCredentials(newCreds)
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text(text = "Save Configuration", style = MaterialTheme.typography.titleLarge)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedButton(
-                onClick = {
-                    val currentCreds = MetaCredentials(
-                        phoneNumberId = phoneNumberId,
-                        accessToken = accessToken,
-                        businessAccountId = businessAccountId,
-                        webhookVerifyToken = webhookVerifyToken
-                    )
-                    viewModel.testApiConnection(currentCreds)
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(10.dp),
-                enabled = !state.isTestingConnection
-            ) {
-                if (state.isTestingConnection) {
-                    CircularProgressIndicator(color = BrandAccent)
-                } else {
-                    Text(text = "Test API Connection", color = BrandAccent)
-                }
-            }
         }
+    }
+
+    // Modal In-App WebView Bottom Sheet for Meta Graph API Explorer
+    if (state.showWebViewSheet) {
+        MetaTokenWebViewSheet(
+            sheetState = sheetState,
+            onTokenConfirmed = { token ->
+                viewModel.onTokenCopiedFromWebView(token)
+                viewModel.verifyToken(token)
+            },
+            onDismiss = {
+                viewModel.hideWebViewSheet()
+            }
+        )
     }
 }
 
@@ -271,9 +301,9 @@ fun PermissionRow(
                 modifier = Modifier.size(24.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.size(16.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -286,7 +316,7 @@ fun PermissionRow(
                 style = MaterialTheme.typography.bodySmall
             )
         }
-        
+
         if (!isGranted) {
             Button(
                 onClick = onGrantClick,
@@ -298,14 +328,3 @@ fun PermissionRow(
         }
     }
 }
-
-@Composable
-private fun customTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = BrandAccent,
-    unfocusedBorderColor = BrandTextSecondary,
-    focusedLabelColor = BrandAccent,
-    unfocusedLabelColor = BrandTextSecondary,
-    focusedTextColor = BrandTextPrimary,
-    unfocusedTextColor = BrandTextPrimary,
-    cursorColor = BrandAccent
-)

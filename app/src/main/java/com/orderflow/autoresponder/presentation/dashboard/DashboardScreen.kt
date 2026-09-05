@@ -52,7 +52,8 @@ fun DashboardScreen(
     onNavigateToRules: () -> Unit,
     onNavigateToLogs: () -> Unit,
     onNavigateToCustomers: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToDiagnostics: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -106,6 +107,41 @@ fun DashboardScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Notification Access Status Card
+            if (!state.isNotificationAccessGranted) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(12.dp),
+                    onClick = onNavigateToSettings
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                        Column {
+                            Text(
+                                text = "Notification Access Required",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Tap to enable auto-reply permission",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             Text(
                 text = "Live Statistics",
@@ -181,10 +217,10 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             QuickActionButton(
-                title = "Meta API Settings",
-                subtitle = "Configure Meta WhatsApp Cloud API",
+                title = "Diagnostics & Status",
+                subtitle = "Check service & notification health",
                 icon = Icons.Default.Settings,
-                onClick = onNavigateToSettings
+                onClick = onNavigateToDiagnostics
             )
         }
     }

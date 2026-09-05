@@ -10,11 +10,21 @@ import javax.inject.Inject
 
 class EvaluateRuleUseCase @Inject constructor() {
 
-    operator fun invoke(incomingMessage: String, rules: List<AutoReplyRule>): AutoReplyRule? {
+    operator fun invoke(
+        incomingMessage: String,
+        rules: List<AutoReplyRule>,
+        isGroup: Boolean = false
+    ): AutoReplyRule? {
         val trimmedInput = incomingMessage.trim()
         val activeRules = rules.filter { it.isActive }
+            .sortedByDescending { it.priority }
 
         for (rule in activeRules) {
+            // Check group chat support
+            if (isGroup && !rule.enabledForGroups) {
+                continue
+            }
+
             if (!isWithinBusinessHours(rule.businessHours)) {
                 StructuredLogger.d("EvaluateRuleUseCase", "Rule '${rule.ruleName}' skipped: outside business hours")
                 continue
@@ -26,21 +36,26 @@ class EvaluateRuleUseCase @Inject constructor() {
             }
         }
 
-        // Check for fallback ALL or AWAY rule if no exact match
-        return activeRules.firstOrNull { it.matchOption == MatchOption.ALL || it.matchOption == MatchOption.AWAY }
+        // Check for fallback ALL or AWAY rule if no exact match (also respecting priority)
+        return activeRules.firstOrNull { 
+            (it.matchOption == MatchOption.ALL || it.matchOption == MatchOption.AWAY) && 
+            (!isGroup || it.enabledForGroups) 
+        }
     }
 
     private fun isMatch(input: String, rule: AutoReplyRule): Boolean {
         val keywords = rule.keywordsCsv.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        val ignoreCase = !rule.caseSensitive
         
         return when (rule.matchOption) {
-            MatchOption.EXACT -> keywords.any { it.equals(input, ignoreCase = true) }
-            MatchOption.CONTAINS -> keywords.any { input.contains(it, ignoreCase = true) }
-            MatchOption.STARTS_WITH -> keywords.any { input.startsWith(it, ignoreCase = true) }
-            MatchOption.ENDS_WITH -> keywords.any { input.endsWith(it, ignoreCase = true) }
+            MatchOption.EXACT -> keywords.any { it.equals(input, ignoreCase = ignoreCase) }
+            MatchOption.CONTAINS -> keywords.any { input.contains(it, ignoreCase = ignoreCase) }
+            MatchOption.STARTS_WITH -> keywords.any { input.startsWith(it, ignoreCase = ignoreCase) }
+            MatchOption.ENDS_WITH -> keywords.any { input.endsWith(it, ignoreCase = ignoreCase) }
             MatchOption.REGEX -> keywords.any { keyword ->
                 try {
-                    Regex(keyword, RegexOption.IGNORE_CASE).containsMatchIn(input)
+                    val options = if (ignoreCase) setOf(RegexOption.IGNORE_CASE) else emptySet()
+                    Regex(keyword, options).containsMatchIn(input)
                 } catch (e: Exception) {
                     false
                 }

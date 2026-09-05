@@ -16,5 +16,7 @@ enum class MessageStatus {
     SENT,
     FAILED,
     QUEUED,
-    IGNORED
+    IGNORED,
+    DUPLICATE,
+    SKIPPED
 }

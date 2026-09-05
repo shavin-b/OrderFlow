@@ -2,6 +2,7 @@ package com.orderflow.autoresponder.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.orderflow.autoresponder.domain.model.AutoReplyMessage
 import com.orderflow.autoresponder.domain.model.AutoReplyRule
 import com.orderflow.autoresponder.domain.model.BusinessHours
 import com.orderflow.autoresponder.domain.model.MatchOption
@@ -18,6 +19,10 @@ data class RuleEntity(
     val isActive: Boolean,
     val isPauseForContact: Boolean,
     val pauseDurationMinutes: Int,
+    val priority: Int = 0,
+    val caseSensitive: Boolean = false,
+    val enabledForGroups: Boolean = false,
+    val initialDelaySeconds: Int = 0,
     val createdAt: Long,
     val businessHoursEnabled: Boolean,
     val startHour: Int,
@@ -27,18 +32,21 @@ data class RuleEntity(
     val activeDaysCsv: String
 )
 
-fun RuleEntity.toDomainModel(): AutoReplyRule {
+fun RuleEntity.toDomainModel(messages: List<AutoReplyMessage> = emptyList()): AutoReplyRule {
     return AutoReplyRule(
         id = id,
         ruleName = ruleName,
         keywordsCsv = keywordsCsv,
-        replyMessagesJson = replyMessagesJson,
         matchOption = try { MatchOption.valueOf(matchOption) } catch (e: Exception) { MatchOption.EXACT },
+        initialDelaySeconds = initialDelaySeconds,
         delaySeconds = delaySeconds,
         replySequential = replySequential,
         isActive = isActive,
         isPauseForContact = isPauseForContact,
         pauseDurationMinutes = pauseDurationMinutes,
+        priority = priority,
+        caseSensitive = caseSensitive,
+        enabledForGroups = enabledForGroups,
         createdAt = createdAt,
         businessHours = BusinessHours(
             isEnabled = businessHoursEnabled,
@@ -47,7 +55,8 @@ fun RuleEntity.toDomainModel(): AutoReplyRule {
             endHour = endHour,
             endMinute = endMinute,
             activeDaysCsv = activeDaysCsv
-        )
+        ),
+        messages = messages
     )
 }
 
@@ -56,13 +65,17 @@ fun AutoReplyRule.toEntity(): RuleEntity {
         id = id,
         ruleName = ruleName,
         keywordsCsv = keywordsCsv,
-        replyMessagesJson = replyMessagesJson,
+        replyMessagesJson = "", // Deprecated, will be ignored in favor of rule_messages table
         matchOption = matchOption.name,
         delaySeconds = delaySeconds,
+        initialDelaySeconds = initialDelaySeconds,
         replySequential = replySequential,
         isActive = isActive,
         isPauseForContact = isPauseForContact,
         pauseDurationMinutes = pauseDurationMinutes,
+        priority = priority,
+        caseSensitive = caseSensitive,
+        enabledForGroups = enabledForGroups,
         createdAt = createdAt,
         businessHoursEnabled = businessHours.isEnabled,
         startHour = businessHours.startHour,

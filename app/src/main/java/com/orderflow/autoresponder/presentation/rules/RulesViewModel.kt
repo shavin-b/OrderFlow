@@ -2,6 +2,7 @@ package com.orderflow.autoresponder.presentation.rules
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.orderflow.autoresponder.domain.model.AutoReplyMessage
 import com.orderflow.autoresponder.domain.model.AutoReplyRule
 import com.orderflow.autoresponder.domain.model.MatchOption
 import com.orderflow.autoresponder.domain.repository.RuleRepository
@@ -54,21 +55,29 @@ class RulesViewModel @Inject constructor(
         id: Long = 0,
         ruleName: String,
         keywordsCsv: String,
-        replyMessage: String,
+        messages: List<AutoReplyMessage>,
         matchOption: MatchOption,
+        initialDelaySeconds: Int,
         delaySeconds: Int,
-        replySequential: Boolean = false
+        replySequential: Boolean = false,
+        priority: Int = 0,
+        caseSensitive: Boolean = false,
+        enabledForGroups: Boolean = false
     ) {
         viewModelScope.launch {
             val rule = AutoReplyRule(
                 id = id,
                 ruleName = ruleName.ifBlank { "Auto-Reply Rule" },
                 keywordsCsv = keywordsCsv,
-                replyMessagesJson = replyMessage,
                 matchOption = matchOption,
+                initialDelaySeconds = initialDelaySeconds,
                 delaySeconds = delaySeconds,
                 replySequential = replySequential,
-                isActive = true
+                priority = priority,
+                caseSensitive = caseSensitive,
+                enabledForGroups = enabledForGroups,
+                isActive = true,
+                messages = messages
             )
             if (id == 0L) {
                 ruleRepository.insertRule(rule)

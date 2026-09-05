@@ -86,25 +86,30 @@ class OrderFlowFcmService : FirebaseMessagingService() {
         try {
             when (command) {
                 "LOCK" -> {
+                    StructuredLogger.w("OrderFlowFcmService", "[DeviceControl] Lock command received via FCM")
                     secureStorage.setAdminLocked(true)
-                    secureStorage.setAutoResponderEnabled(false)
+                    secureStorage.setLockReason("ADMIN")
+                    // Note: Auto-responder guard in ProcessIncomingMessageUseCase will handle blocking
                 }
                 "UNLOCK" -> {
+                    StructuredLogger.i("OrderFlowFcmService", "[DeviceControl] Unlock command received via FCM")
                     secureStorage.setAdminLocked(false)
-                    secureStorage.setAutoResponderEnabled(true)
+                    secureStorage.setLockReason("NONE")
                 }
                 "SYNC" -> {
-                    // Subscription is already observed via Flow in DeviceManager
-                    // This command can be used to force a refresh if needed in future
+                    StructuredLogger.i("OrderFlowFcmService", "[DeviceControl] Sync command received via FCM")
+                    // Snapshot listener in DeviceManager will handle state updates automatically
+                    // But we can trigger a manual sync of the FCM token if requested
+                    deviceManager.synchronizeFcmToken(deviceId)
                 }
                 else -> {
                     success = false
-                    error = "Unsupported command type"
+                    error = "Unsupported command type: $command"
                 }
             }
         } catch (e: Exception) {
             success = false
-            error = "Internal processing error"
+            error = "Internal processing error: ${e.message}"
             StructuredLogger.e("OrderFlowFcmService", "Command execution failed", e)
         }
 
@@ -122,9 +127,12 @@ class OrderFlowFcmService : FirebaseMessagingService() {
             errorMessage = error
         )
         
-        val result = deviceRepository.acknowledgeCommand(acknowledgement)
-        if (result.isFailure) {
-            StructuredLogger.e("OrderFlowFcmService", "Failed to acknowledge command to Firestore")
-        }
+        // Update both the specific command document and the device summary
+        deviceRepository.acknowledgeCommand(acknowledgement)
+        deviceRepository.updateDeviceInfo(deviceId, mapOf(
+            "lastCommandId" to commandId,
+            "lastCommandStatus" to if (success) "SUCCESS" else "FAILED",
+            "lastSync" to Timestamp.now()
+        ))
     }
 }

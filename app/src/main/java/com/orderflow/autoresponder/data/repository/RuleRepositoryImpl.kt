@@ -14,23 +14,27 @@ class RuleRepositoryImpl @Inject constructor(
 ) : RuleRepository {
 
     override fun getAllRules(): Flow<List<AutoReplyRule>> {
-        return ruleDao.getAllRules().map { list -> list.map { it.toDomainModel() } }
+        return ruleDao.getAllRulesWithMessages().map { list -> list.map { it.toDomainModel() } }
     }
 
     override fun getActiveRules(): Flow<List<AutoReplyRule>> {
-        return ruleDao.getActiveRules().map { list -> list.map { it.toDomainModel() } }
+        return ruleDao.getActiveRulesWithMessages().map { list -> list.map { it.toDomainModel() } }
     }
 
     override suspend fun getRuleById(id: Long): AutoReplyRule? {
-        return ruleDao.getRuleById(id)?.toDomainModel()
+        return ruleDao.getRuleByIdWithMessages(id)?.toDomainModel()
     }
 
     override suspend fun insertRule(rule: AutoReplyRule): Long {
-        return ruleDao.insertRule(rule.toEntity())
+        val ruleEntity = rule.toEntity()
+        val messageEntities = rule.messages.map { it.toEntity() }
+        return ruleDao.saveRuleWithMessages(ruleEntity, messageEntities)
     }
 
     override suspend fun updateRule(rule: AutoReplyRule) {
-        ruleDao.updateRule(rule.toEntity())
+        val ruleEntity = rule.toEntity()
+        val messageEntities = rule.messages.map { it.toEntity() }
+        ruleDao.saveRuleWithMessages(ruleEntity, messageEntities)
     }
 
     override suspend fun deleteRule(rule: AutoReplyRule) {

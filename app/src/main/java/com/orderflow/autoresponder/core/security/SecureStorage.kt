@@ -51,23 +51,21 @@ class SecureStorage @Inject constructor(
         return prefs.getBoolean(KEY_USE_CLOUD_API, false)
     }
 
-    fun setAppSuspended(suspended: Boolean) {
-        prefs.edit().putBoolean(KEY_APP_SUSPENDED, suspended).apply()
+    // --- Subscription Management ---
+    
+    fun setSubscriptionStatus(status: String) {
+        prefs.edit().putString(KEY_SUBSCRIPTION_STATUS, status).apply()
     }
 
-    fun isAppSuspended(): Boolean {
-        return prefs.getBoolean(KEY_APP_SUSPENDED, false)
+    fun getSubscriptionStatus(): String {
+        return prefs.getString(KEY_SUBSCRIPTION_STATUS, "ACTIVE") ?: "ACTIVE"
     }
 
-    fun isAppSuspendedFlow(): Flow<Boolean> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == KEY_APP_SUSPENDED) {
-                trySend(sharedPreferences.getBoolean(KEY_APP_SUSPENDED, false))
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.onStart { emit(isAppSuspended()) }
+    fun isSubscriptionActive(): Boolean {
+        return getSubscriptionStatus() == "ACTIVE" || getSubscriptionStatus() == "EXPIRING_SOON"
+    }
+
+    // --- Admin Lock Management ---
 
     fun setAdminLocked(locked: Boolean) {
         prefs.edit().putBoolean(KEY_ADMIN_LOCKED, locked).apply()
@@ -77,15 +75,35 @@ class SecureStorage @Inject constructor(
         return prefs.getBoolean(KEY_ADMIN_LOCKED, false)
     }
 
-    fun isAdminLockedFlow(): Flow<Boolean> = callbackFlow {
+    fun setLockReason(reason: String) {
+        prefs.edit().putString(KEY_LOCK_REASON, reason).apply()
+    }
+
+    fun getLockReason(): String {
+        return prefs.getString(KEY_LOCK_REASON, "NONE") ?: "NONE"
+    }
+
+    // --- Effective Application State ---
+
+    fun isEffectivelyBlocked(): Boolean {
+        return isAdminLocked() || !isSubscriptionActive()
+    }
+
+    /**
+     * Combined flow for the UI to observe effectively blocked state.
+     * Emits true if Admin Locked OR Subscription is NOT Active.
+     */
+    fun applicationBlockFlow(): Flow<Boolean> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == KEY_ADMIN_LOCKED) {
-                trySend(sharedPreferences.getBoolean(KEY_ADMIN_LOCKED, false))
+            if (key == KEY_ADMIN_LOCKED || key == KEY_SUBSCRIPTION_STATUS) {
+                trySend(isEffectivelyBlocked())
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.onStart { emit(isAdminLocked()) }
+    }.onStart { emit(isEffectivelyBlocked()) }
+
+    // --- Identity ---
 
     fun getDeviceId(): String? {
         return prefs.getString(KEY_DEVICE_ID, null)
@@ -111,13 +129,7 @@ class SecureStorage @Inject constructor(
         prefs.edit().putLong(KEY_SUBSCRIPTION_END, timestamp).apply()
     }
 
-    fun getSubscriptionStatus(): String {
-        return prefs.getString(KEY_SUBSCRIPTION_STATUS, "ACTIVE") ?: "ACTIVE"
-    }
-
-    fun saveSubscriptionStatus(status: String) {
-        prefs.edit().putString(KEY_SUBSCRIPTION_STATUS, status).apply()
-    }
+    // --- Command Sync ---
 
     fun isCommandProcessed(commandId: String): Boolean {
         val processed = prefs.getStringSet(KEY_PROCESSED_COMMANDS, emptySet()) ?: emptySet()
@@ -132,6 +144,36 @@ class SecureStorage @Inject constructor(
         prefs.edit().putStringSet(KEY_PROCESSED_COMMANDS, trimmed).apply()
     }
 
+    // --- Legacy / Compatibility (To be removed after UI update) ---
+
+    @Deprecated("Use isSubscriptionActive()", replaceWith = ReplaceWith("!isSubscriptionActive()"))
+    fun isAppSuspended(): Boolean = !isSubscriptionActive()
+
+    @Deprecated("Use setSubscriptionStatus()", replaceWith = ReplaceWith("setSubscriptionStatus(if (suspended) \"EXPIRED\" else \"ACTIVE\")"))
+    fun setAppSuspended(suspended: Boolean) {
+        setSubscriptionStatus(if (suspended) "EXPIRED" else "ACTIVE")
+    }
+
+    fun isAppSuspendedFlow(): Flow<Boolean> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (key == KEY_SUBSCRIPTION_STATUS) {
+                trySend(!isSubscriptionActive())
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.onStart { emit(!isSubscriptionActive()) }
+
+    fun isAdminLockedFlow(): Flow<Boolean> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (key == KEY_ADMIN_LOCKED) {
+                trySend(isAdminLocked())
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.onStart { emit(isAdminLocked()) }
+
     companion object {
         private const val PREFS_NAME = "orderflow_secure_prefs"
         private const val KEY_PHONE_ID = "phone_number_id"
@@ -140,12 +182,13 @@ class SecureStorage @Inject constructor(
         private const val KEY_WEBHOOK_TOKEN = "webhook_verify_token"
         private const val KEY_AUTO_RESPONDER_ENABLED = "auto_responder_enabled"
         private const val KEY_USE_CLOUD_API = "use_cloud_api"
-        private const val KEY_APP_SUSPENDED = "app_suspended"
         private const val KEY_ADMIN_LOCKED = "admin_locked"
+        private const val KEY_LOCK_REASON = "lock_reason"
         private const val KEY_DEVICE_ID = "device_id"
         private const val KEY_FCM_TOKEN = "fcm_token"
         private const val KEY_SUBSCRIPTION_END = "subscription_end"
         private const val KEY_SUBSCRIPTION_STATUS = "subscription_status"
         private const val KEY_PROCESSED_COMMANDS = "processed_command_ids"
+        private const val KEY_APP_SUSPENDED = "app_suspended" // Kept for legacy key
     }
 }

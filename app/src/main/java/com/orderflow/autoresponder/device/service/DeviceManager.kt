@@ -35,14 +35,9 @@ class DeviceManager @Inject constructor(
     fun initialize() {
         StructuredLogger.i("DeviceManager", "Initializing DeviceManager...")
         
-        // Log current persistent state
-        if (secureStorage.isAdminLocked()) {
-            StructuredLogger.w("DeviceManager", "App suspension state restored: SUSPENDED (Admin Lock)")
-        } else if (secureStorage.isAppSuspended()) {
-            StructuredLogger.w("DeviceManager", "App suspension state restored: SUSPENDED (Subscription)")
-        } else {
-            StructuredLogger.i("DeviceManager", "App suspension state restored: ACTIVE")
-        }
+        // Log current persistent state for diagnostics
+        StructuredLogger.i("DeviceManager", "[DeviceControl] Current Lock State: ${if (secureStorage.isAdminLocked()) "LOCKED" else "UNLOCKED"}")
+        StructuredLogger.i("DeviceManager", "[DeviceControl] Current Subscription: ${secureStorage.getSubscriptionStatus()}")
 
         serviceScope.launch {
             val deviceId = getOrCreateDeviceId()
@@ -55,7 +50,7 @@ class DeviceManager @Inject constructor(
             registerOrUpdateDevice(deviceId)
             
             // 3. Start background processes
-            observeSubscription(deviceId)
+            observeDeviceState(deviceId)
             scheduleHeartbeat()
         }
     }
@@ -104,18 +99,19 @@ class DeviceManager @Inject constructor(
     }
 
     private suspend fun registerOrUpdateDevice(deviceId: String) {
-        StructuredLogger.i("DeviceManager", "Syncing device info with Firestore...")
+        StructuredLogger.i("DeviceManager", "Syncing real device info with Firestore...")
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         
-        // Retrieve the current token from SecureStorage (populated by synchronizeFcmToken)
+        // Retrieve the current token from SecureStorage
         val currentToken = secureStorage.getFcmToken() ?: ""
+        val credentials = secureStorage.getMetaCredentials()
 
         val deviceInfo = DeviceInfo(
             deviceId = deviceId,
             phoneModel = Build.MODEL,
             manufacturer = Build.MANUFACTURER,
             androidVersion = Build.VERSION.RELEASE,
-            appVersion = packageInfo.versionName ?: "unknown",
+            appVersion = packageInfo.versionName ?: "1.0.0",
             appBuildNumber = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode.toInt()
             } else {
@@ -123,13 +119,18 @@ class DeviceManager @Inject constructor(
                 packageInfo.versionCode
             },
             installationDate = packageInfo.firstInstallTime,
-            // Only set firstSeen if we are creating a new record. 
-            // Firestore 'set with merge' will handle the rest.
+            userName = "User ${deviceId.takeLast(4)}",
+            businessName = if (credentials.businessAccountId.isNotBlank()) "Biz ${credentials.businessAccountId}" else "OrderFlow User",
             firstSeen = null, 
             lastSeen = Timestamp.now(),
             lastSync = Timestamp.now(),
             fcmToken = currentToken,
+            generatedUuid = deviceId, // Use full ID as UUID
             status = "Active",
+            lockStatus = if (secureStorage.isAdminLocked()) "LOCKED" else "UNLOCKED",
+            adminLock = secureStorage.isAdminLocked(),
+            isLocked = secureStorage.isAdminLocked(),
+            lockReason = secureStorage.getLockReason(),
             subscriptionStatus = secureStorage.getSubscriptionStatus()
         )
 
@@ -141,30 +142,52 @@ class DeviceManager @Inject constructor(
         }
     }
 
-    private fun observeSubscription(deviceId: String) {
-        StructuredLogger.i("DeviceManager", "Starting subscription observer...")
+    private fun observeDeviceState(deviceId: String) {
+        StructuredLogger.i("DeviceManager", "Starting device state observer (Raw Map)...")
         serviceScope.launch {
-            deviceRepository.getDeviceSubscriptionFlow(deviceId)
+            deviceRepository.getDeviceRawFlow(deviceId)
                 .catch { e -> 
-                    StructuredLogger.e("DeviceManager", "Subscription flow error", e)
+                    StructuredLogger.e("DeviceManager", "Device state flow error", e)
                 }
-                .collect { deviceInfo ->
-                    if (deviceInfo != null) {
-                    StructuredLogger.i("DeviceManager", "Subscription update received: ${deviceInfo.subscriptionStatus}")
-                    secureStorage.saveSubscriptionStatus(deviceInfo.subscriptionStatus)
-                    val expiry = deviceInfo.subscriptionEnd?.toDate()?.time ?: 0L
-                    secureStorage.saveSubscriptionEnd(expiry)
-                    
-                    // Trigger suspension if status is SUSPENDED or EXPIRED
-                    val shouldSuspend = deviceInfo.subscriptionStatus == "SUSPENDED" || 
-                                        deviceInfo.subscriptionStatus == "EXPIRED"
-                    
-                    if (secureStorage.isAppSuspended() != shouldSuspend) {
-                        StructuredLogger.w("DeviceManager", "Remote command: Setting app suspended to $shouldSuspend")
-                        secureStorage.setAppSuspended(shouldSuspend)
+                .collect { data ->
+                    if (data != null) {
+                        StructuredLogger.d("DeviceManager", "[DeviceControl] Received RAW state sync: $data")
+
+                        // 1. Handle Admin Lock State (Check ALL possible fields)
+                        val statusField = data["status"]?.toString() ?: ""
+                        val lockStatusField = data["lockStatus"]?.toString() ?: ""
+                        val adminLockField = data["adminLock"]
+                        val isLockedField = data["isLocked"]
+
+                        val isLocked = statusField.contains("LOCKED", ignoreCase = true) || 
+                                       statusField.contains("Suspended", ignoreCase = true) ||
+                                       statusField.contains("Blocked", ignoreCase = true) ||
+                                       lockStatusField.contains("LOCKED", ignoreCase = true) ||
+                                       lockStatusField.contains("Admin Locked", ignoreCase = true) ||
+                                       (adminLockField is Boolean && adminLockField) ||
+                                       (isLockedField is Boolean && isLockedField) ||
+                                       (adminLockField?.toString()?.equals("true", ignoreCase = true) ?: false)
+                        
+                        if (secureStorage.isAdminLocked() != isLocked) {
+                            StructuredLogger.w("DeviceManager", "[DeviceControl] REMOTE CHANGE DETECTED: Lock Status -> $isLocked")
+                            secureStorage.setAdminLocked(isLocked)
+                            val reason = data["lockReason"]?.toString() ?: if (isLocked) "ADMIN" else "NONE"
+                            secureStorage.setLockReason(reason)
+                        }
+
+                        // 2. Handle Subscription Status
+                        val subStatus = data["subscriptionStatus"]?.toString() ?: "ACTIVE"
+                        if (secureStorage.getSubscriptionStatus() != subStatus) {
+                            StructuredLogger.i("DeviceManager", "[DeviceControl] REMOTE CHANGE DETECTED: Subscription -> $subStatus")
+                            secureStorage.setSubscriptionStatus(subStatus)
+                            
+                            val subEnd = data["subscriptionEnd"]
+                            if (subEnd is Timestamp) {
+                                secureStorage.saveSubscriptionEnd(subEnd.toDate().time)
+                            }
+                        }
                     }
                 }
-            }
         }
     }
 }
